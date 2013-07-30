@@ -7,7 +7,7 @@ TalkIn is an interface providing safe and easy unidirectional cross-document com
 - [Quick Usage](#quick-usage)
 - [Why is TalkIn Awesome?](#why-is-talkin-awesome)
 - [Browser Support](#browser-support)
-- [Configuring, Building, and Demoing](#configuring-building-demoing)
+- [Configuring, Building, and Demoing](#configuring-building-and-demoing)
 - [Versions](#versions)
 - [API](#api)
 
