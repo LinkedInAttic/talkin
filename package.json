@@ -1,0 +1,23 @@
+{
+  "name": "talkin",
+  "version": "1.2.2",
+  "author": "LinkedIn",
+  "maintainers": "Kevin Mikles <kmikles@linkedin.com>",
+  "licenses": [
+    {
+      "type": "Apache License, Version 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
+  "description": "An interface providing safe and easy unidirectional cross-document communication.",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.1.2",
+    "grunt-contrib-jshint": "~0.3.0", 
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-jsbeautifier": "~0.1.6",
+    "grunt-shell": "~0.2.2",
+    "node-static": "~0.6.9"
+  }
+}

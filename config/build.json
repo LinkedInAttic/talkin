@@ -1,0 +1,54 @@
+{
+  "debug": {
+    "beginLegacySupport":           "Begin configuring legacy support...",
+    "createJSONScript":             "Creating a script element to load JSON lib.",
+    "createIframeContainer":        "Creating iframe container.",
+    "createIframe":                 "Creating iframe...",
+    "legacyNotReady":               "Legacy support is not ready!",
+    "setIframeSrcs":                "Begin setting iframe srcs.",
+    "originNotWhitelisted":         "origin ' + evt.origin + ' is not whitelisted! Halting message processing.",
+    "messageReceivedParent":        "Message received in parent...",
+    "settingRemoteOriginParent":    "READY! From origin: ' + evt.origin + '. Posting back to child...",
+    "remoteOriginSet":              "remoteOrigin is set! Process the endpoint: ' + endpoint + '",
+    "errorParsingMessage":          "ERROR! Parent could not parse message: ' + evt.data + '",
+    "messageReceivedChild":         "Message received in child...",
+    "settingRemoteOriginChild":     "remoteOrigin set to: ' + remoteOrigin + '. Removing listener.",
+    "cachedDataAvailable":          "There was cachedData available. Send it to parent.",
+    "initStart":                    "TalkIn init: ' + win.location + '",
+    "initParent":                   "Initializing parent, setting message listener.",
+    "initChild":                    "Initializing child...",
+    "notWebkit":                    "Not Webkit...",
+    "settingNamespace":             "Attempting to set namespace...",
+    "stripSubdomain":               "FAIL. Try stripping subdomain and setting again...",
+    "giveUpSubdomain":              "FAIL. Give up and do postMessage.",
+    "usePostMessage":               "No endpoint set. Resort to postMessage. Listening for handshake.",
+    "sendInvoked":                  "TalkIn send fired from ' + win.location + '",
+    "sendUseNamespace":             "...and since an endpoint was successfully set, use it.",
+    "sendUsePostMessage":           "...using postMessage to invoke.",
+    "sendRemoteOriginNotSet":       "...but remoteOrigin was not set!",
+    "sendAttemptingHandshake":      "...attempting handshake... ' + handshakeTimeout + '",
+    "handshakeFailed":              "Handshake failed.",
+    "sendUseLegacyFallback":        "...falling back to ancient browser support.",
+    "endpointMissing":              "ERROR! Could not find endpoint: ' + endpoint + '"
+  },
+
+  "logger": {
+    "debugLogger":                  "logger.js"
+  },
+
+  "parent": {
+    "parentAPI":                    "api-parent.js"
+  },
+
+  "child": {
+    "childAPI":                     "api-child.js",
+    "legacy":                       "legacy.js"
+  },
+
+  "secure": {
+    "crypto":                       "sha1.js",
+    "whitelist":                    "whitelist.js",
+    "verifyWhitelist":              "whitelistVerify.js",
+    "isWhitelisted":                "isWhitelisted.js"
+  }
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+  <head>
+    <!--
+      TalkIn
+      (c) 2013 LinkedIn Corp.  All rights reserved.
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing,
+      software distributed under the License is distributed on an "AS
+      IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+      express or implied. See the License for the specific language
+      governing permissions and limitations under the License.
+    -->
+    <meta charset="utf-8"/>
+    <title>TalkIn : Basic Example</title>
+    <link rel="stylesheet" href="../../css/demo.css"/>
+  </head>
+  
+  <body>
+    <h1>TalkIn Basic</h1>
+
+    <div class="module">
+      <p>Your lucky number is: <span id="lucky-number">?</span></p>
+    </div>
+
+    <iframe class="module" data-src="{$origin}/demo/html/basic/frame.html"></iframe>
+
+    <script src="../../js/demo-bootstrap.js"></script>
+
+    <!--
+      Since this document is the 'parent' (window.top), we'll use talkin-parent.js in production.
+      The -demo suffix gives us debugging via console, removes whitelist security for ease of use,
+      and has IE7 support properly configured for this environment.
+    -->
+    <script src="../../js/talkin-demo.js"></script>
+
+    <script>
+
+      (function() {
+
+        // Cached reference to span#lucky-number.
+        var luckyNumber = document.getElementById('lucky-number');
+
+        // Registering a function to be invoked by the iframed document. TalkIn can also register
+        // objects; see the 'complex' example for more information.
+        LI.TalkIn.register('showNumber', function(data) {
+          luckyNumber.innerHTML = data.number;
+        });
+
+      }());
+
+    </script>
+
+  </body>
+  
+</html>
