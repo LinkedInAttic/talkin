@@ -17,7 +17,7 @@ TalkIn is an interface providing safe and easy unidirectional cross-document com
 
 ### First off...
 
-Make sure you have [configured and built TalkIn](#configuring-building-demoing).
+Make sure you have [configured and built TalkIn](#configuring-building-and-demoing).
 
 ### In the Parent Document
 
