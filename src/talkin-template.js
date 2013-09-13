@@ -21,10 +21,10 @@ LI.TalkIn = LI.Talkin || (function(win) {
   'use strict';
 
   // Handshake message data for postMessage mode.
-  var READY_MESSAGE = 'TALKIN_READY',
+  var READY_MESSAGE = 'ADTALK_READY',
 
     // Temporary property for postMessage data objects containing the target endpoint.
-    ENDPOINT_PROPERTY = 'TALKIN_ENDPOINT',
+    ENDPOINT_PROPERTY = 'ADTALK_ENDPOINT',
 
     // The postMessage 'message' event.
     MESSAGE_EVENT = 'message',
