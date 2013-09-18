@@ -98,7 +98,7 @@
     var possibleParentOrigins = [
           <%= config.legacy.whitelist %>
         ],
-        path = '<%= config.legacy.sendfile %>#',
+        path = '<%= config.legacy.sendfile %>?',
         len = possibleParentOrigins.length,
         container,
         iframes;
