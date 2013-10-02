@@ -1,6 +1,6 @@
 /*
 TalkIn
-v1.2.2
+v1.2.4
 (c) 2013 LinkedIn Corp.  All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,10 +23,10 @@ LI.TalkIn = LI.Talkin || (function(win) {
   'use strict';
 
   // Handshake message data for postMessage mode.
-  var READY_MESSAGE = 'TALKIN_READY',
+  var READY_MESSAGE = 'ADTALK_READY',
 
     // Temporary property for postMessage data objects containing the target endpoint.
-    ENDPOINT_PROPERTY = 'TALKIN_ENDPOINT',
+    ENDPOINT_PROPERTY = 'ADTALK_ENDPOINT',
 
     // The postMessage 'message' event.
     MESSAGE_EVENT = 'message',
@@ -69,7 +69,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
     // If we're using postMessage and the handshake fails, TalkIn.send will
     // attempt to shake hands again. The data send with the initial call will be
     // reused when the handshake is successful.
-    cachedData,
+    cachedData = [],
 
     // Methods to bind listeners to objects. (el, evt, fn)
     addListener,
@@ -262,7 +262,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
   function sendLegacyMessage(data) {
 
     var possibleParentOrigins = [
-      'https://kmikles-mn.linkedin.biz:9443', 'http://kmikles-mn.linkedin.biz:9090', 'https://localhost:9443', 'http://localhost:9090'
+      'https://localhost:9443', 'http://localhost:9090'
     ],
       path = '/demo/html/sender.html?',
       len = possibleParentOrigins.length,
@@ -319,7 +319,8 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
     var data = evt.data,
       parsedData,
-      endpoint;
+      endpoint,
+      cached;
 
     // If this is the parent...
     if (isTopWindow) {
@@ -368,10 +369,10 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
         // If there is cachedData, that means TalkIn.send initially failed the handshake.
         // Now that it was successful, attempt to send the initial data again.
-        if (cachedData) {
+        while (cachedData.length) {
           l('There was cachedData available. Send it to parent.');
-          LI.TalkIn.send(cachedData[ENDPOINT_PROPERTY], cachedData);
-          cachedData = null;
+          cached = cachedData.pop();
+          LI.TalkIn.send(cached[ENDPOINT_PROPERTY], cached);
         }
       }
 
@@ -445,13 +446,25 @@ LI.TalkIn = LI.Talkin || (function(win) {
      * a function or an object that exposes functions---the latter being useful for
      * organizing a collection of similar methods.
      *
-     * @param  {String}               methodName The name of the endpoint to access.
+     * @param  {String}               name       The name of the endpoint to access.
      * @param  {Function || Object}   endpoint   The function to invoke or an object
      *                                           that exposes functions to invoke.
      */
-    register: function(methodName, endpoint) {
-      if (methodName && endpoint && endpoint instanceof Object) {
-        this.endpoints[methodName] = endpoint;
+    register: function(name, endpoint) {
+
+      var endpoints = this.endpoints,
+        endpointObject,
+        p;
+
+      if (name && endpoint && endpoint instanceof Object) {
+        if (endpoints[name] && Object.prototype.toString.call(endpoint) === '[object Object]') {
+          endpointObject = endpoints[name];
+          for (p in endpoint) {
+            endpointObject[p] = endpoint[p];
+          }
+        } else {
+          endpoints[name] = endpoint;
+        }
       }
     },
 
@@ -477,7 +490,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
         invokeEndpoint(methodName, data);
       }
 
-      // Otherwise we'll use postMessage ... or a the legacy fallback.
+      // Otherwise we'll use postMessage ... or the legacy fallback.
       else {
 
         // Append the methodName to the data object so the other methods know what to call.
@@ -494,22 +507,25 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
           // Otherwise, try establishing the handshake again. The child probably loaded before the parent.
           // Cache the data so it can be sent when the connection is established.
-          else if (!handshakeInterval) {
+          else {
+            cachedData.push(data);
 
-            l('...but remoteOrigin was not set!');
+            if (!handshakeInterval) {
 
-            cachedData = data;
-            handshakeInterval = win.setInterval(function() {
+              l('...but remoteOrigin was not set!');
 
-              l('...attempting handshake... ' + handshakeTimeout + '');
+              handshakeInterval = win.setInterval(function() {
 
-              windowTop.postMessage(READY_MESSAGE, '*');
+                l('...attempting handshake... ' + handshakeTimeout + '');
 
-              if (!(handshakeTimeout--)) {
-                l('Handshake failed.');
-                win.clearInterval(handshakeInterval);
-              }
-            }, 100);
+                windowTop.postMessage(READY_MESSAGE, '*');
+
+                if (!(handshakeTimeout--)) {
+                  l('Handshake failed.');
+                  win.clearInterval(handshakeInterval);
+                }
+              }, 100);
+            }
           }
         }
 
@@ -557,7 +573,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
     addListener: addListener,
     removeListener: removeListener,
 
-    VERSION: '1.2.2'
+    VERSION: '1.2.4'
 
   };
 

@@ -71,7 +71,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
     // If we're using postMessage and the handshake fails, TalkIn.send will
     // attempt to shake hands again. The data send with the initial call will be
     // reused when the handshake is successful.
-    cachedData,
+    cachedData = [],
     
     // Methods to bind listeners to objects. (el, evt, fn)
     addListener,
@@ -164,7 +164,8 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
     var data = evt.data,
         parsedData,
-        endpoint;
+        endpoint,
+        cached;
 
     <%= secure.verifyWhitelist %>
 
@@ -218,10 +219,10 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
         // If there is cachedData, that means TalkIn.send initially failed the handshake.
         // Now that it was successful, attempt to send the initial data again.
-        if (cachedData) {
+        while (cachedData.length) {
           <%= debug.cachedDataAvailable %>
-          LI.TalkIn.send(cachedData[ENDPOINT_PROPERTY], cachedData);
-          cachedData = null;
+          cached = cachedData.pop();
+          LI.TalkIn.send(cached[ENDPOINT_PROPERTY], cached);
         }
       }
 

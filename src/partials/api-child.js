@@ -20,7 +20,7 @@
         invokeEndpoint(methodName, data);
       }
       
-      // Otherwise we'll use postMessage ... or a the legacy fallback.
+      // Otherwise we'll use postMessage ... or the legacy fallback.
       else {
 
         // Append the methodName to the data object so the other methods know what to call.
@@ -37,22 +37,25 @@
 
           // Otherwise, try establishing the handshake again. The child probably loaded before the parent.
           // Cache the data so it can be sent when the connection is established.
-          else if (!handshakeInterval) {
+          else {
+            cachedData.push(data);
 
-            <%= debug.sendRemoteOriginNotSet %>
+            if (!handshakeInterval) {
 
-            cachedData = data;
-            handshakeInterval = win.setInterval(function() {
+              <%= debug.sendRemoteOriginNotSet %>
 
-              <%= debug.sendAttemptingHandshake %>
+              handshakeInterval = win.setInterval(function() {
 
-              windowTop.postMessage(READY_MESSAGE, '*');
-              
-              if (!(handshakeTimeout--)) {
-                <%= debug.handshakeFailed %>
-                win.clearInterval(handshakeInterval);
-              }
-            }, 100);
+                <%= debug.sendAttemptingHandshake %>
+
+                windowTop.postMessage(READY_MESSAGE, '*');
+                
+                if (!(handshakeTimeout--)) {
+                  <%= debug.handshakeFailed %>
+                  win.clearInterval(handshakeInterval);
+                }
+              }, 100);
+            }
           }
         }
 
