@@ -17,7 +17,7 @@
           p;
 
       if (name && endpoint && endpoint instanceof Object) {
-        if (endpoints[name] && Object.prototype.toString.call(endpoint) === '[object Object]') {
+        if (endpoints[name] && isObject(endpoint)) {
           endpointObject = endpoints[name];
           for (p in endpoint) {
             endpointObject[p] = endpoint[p];

@@ -4,7 +4,7 @@
       body = document.getElementsByTagName('body')[0],
       loc = win.location,
       origin = loc.protocol + '//' + loc.host,
-      sendMethodsToTest = 5,
+      sendMethodsToTest = 7,
 
       // Endpoints for 'register' tests.
       test1 = (function() {
@@ -56,20 +56,26 @@
           */
 
           multicall1: function(data) {
-            console.log('multicall1 CALLED');
             ok(true, 'Multiple calls, 1 of 3');
             done();
           },
           multicall2: function(data) {
-            console.log('multicall2 CALLED');
             ok(true, 'Multiple calls, 2 of 3');
             done();
           },
           multicall3: function(data) {
-            console.log('multicall3 CALLED');
             ok(true, 'Multiple calls, 3 of 3');
             done();
           },
+
+          bulkcall1: function(data) {
+            ok(true, 'Bulk call, 1 of 2');
+            done();
+          },
+          bulkcall2: function(data) {
+            ok(true, 'Bulk call, 2 of 2');
+            done();
+          }
 
         };
       }());
@@ -126,6 +132,7 @@
     buildIFrame(flippedOrigin + '/test/html/frame-different.html');
 //    buildIFrame(flippedOrigin + '/test/html/frame-legacy-different.html');
     buildIFrame(flippedOrigin + '/test/html/frame-different-multiple.html');
+    buildIFrame(flippedOrigin + '/test/html/frame-different-sendbulk.html');
   });
 
   asyncTest('Fetching query params.', function() {

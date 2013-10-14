@@ -1,6 +1,6 @@
 /*
 TalkIn
-v1.2.4
+v1.3.0
 (c) 2013 LinkedIn Corp.  All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,13 +23,20 @@ LI.TalkIn = LI.Talkin || (function(win) {
   'use strict';
 
   // Handshake message data for postMessage mode.
-  var READY_MESSAGE = 'ADTALK_READY',
+  var READY_MESSAGE = '__READY__',
+
+    // Backwards-compatible ready message required for transition.
+    // *** REMOVE in 1.3.1.
+    LEGACY_READY_MESSAGE = 'ADTALK_READY',
 
     // Temporary property for postMessage data objects containing the target endpoint.
     ENDPOINT_PROPERTY = 'ADTALK_ENDPOINT',
 
     // The postMessage 'message' event.
     MESSAGE_EVENT = 'message',
+
+    // Cached reference to the Object type.
+    TYPE_OBJECT = '[object Object]',
 
     // A cached reference to the document object.
     doc = win.document,
@@ -47,6 +54,9 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
     // Is this browser good and modern?
     hasPostMessage = win.postMessage !== undefined,
+
+    // Cached reference to the object prototype's toString method.
+    toStringProto = Object.prototype.toString,
 
     // If the browser does not pass same-origin security and doesn't support postMessage,
     // we'll fall back to iframe support. This boolean lets TalkIn know the support harness is ready.
@@ -131,7 +141,18 @@ LI.TalkIn = LI.Talkin || (function(win) {
         el.detachEvent('on' + evt, fn);
       };
     }
+  }
 
+  /**
+   * Determines if the passed argument is an object or not.
+   *
+   * @param  {...}  obj   A value to test.
+   *
+   * @return {Boolean}    Is the argument an object?
+   */
+
+  function isObject(obj) {
+    return toStringProto.call(obj) === TYPE_OBJECT;
   }
 
   /**
@@ -139,26 +160,40 @@ LI.TalkIn = LI.Talkin || (function(win) {
    * (For instance, the endpoint 'foo.bar' will execute 'bar' on the 'foo' object
    * in TalkIn's 'endpoints' namespace.)
    *
-   * @param  {String} endpoint The endpoint you wish to invoke, by string. Can be namespaced
-   *                           with a period (E.G. 'foo' or 'foo.bar').
-   * @param  {Object} data     The data object you wish to pass to the endpoint.
+   * @param  {String || Object} endpointOrData  The endpoint you wish to invoke, by string.
+   *                                            Can be namespaced with a period (E.G. 'foo' or 'foo.bar').
+   *                                            Or, an object containing endpoints and the
+   *                                            data you wish to deliver.
+   * @param  {Object} data                      The data object you wish to pass to the endpoint.
+   *                                            Not required if the first argument is a data object.
    */
 
-  function invokeEndpoint(endpoint, data) {
-    var path = endpoint.split('.'),
-      node = path[0],
+  function invokeEndpoint(endpointOrData, data) {
+
+    var endpoint, node, base;
+
+    // If the first argument is an object, loop through the base objects (which should be endpoints).
+    // Invoke this function again using the key as a method and value as data.
+    if (isObject(endpointOrData)) {
+      for (endpoint in endpointOrData) {
+        invokeEndpoint(endpoint, endpointOrData[endpoint]);
+      }
+    }
+
+    // Else, process the endpoint and data normally.
+    else {
+      endpoint = endpointOrData.split('.'),
+      node = endpoint[0],
       base = endpointNamespace.hasOwnProperty(node) ? endpointNamespace[node] : null;
-    try {
-      if (path.length > 1) {
-        node = path[1];
+
+      if (endpoint.length > 1) {
+        node = endpoint[1];
         if (base.hasOwnProperty(node)) {
           base[node](data);
         }
       } else {
         base(data);
       }
-    } catch (e) {
-      l('ERROR! Could not find endpoint: ' + endpoint + '');
     }
   }
 
@@ -264,7 +299,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
     var possibleParentOrigins = [
       'https://localhost:9443', 'http://localhost:9090'
     ],
-      path = '/demo/html/sender.html?',
+      path = '/src/lib/talkin/demo/html/sender.html?',
       len = possibleParentOrigins.length,
       container,
       iframes;
@@ -327,7 +362,8 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       l('Message received in parent...');
 
-      if (data === READY_MESSAGE) {
+      // *** UPDATE in 1.3.1.
+      if (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE) {
         l('READY! From origin: ' + evt.origin + '. Posting back to child...');
         endpointNamespace = LI.TalkIn.endpoints;
         evt.source.postMessage(READY_MESSAGE, evt.origin);
@@ -335,7 +371,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
         try {
           parsedData = JSON.parse(data);
-          endpoint = parsedData[ENDPOINT_PROPERTY];
+          endpoint = parsedData[ENDPOINT_PROPERTY] || parsedData;
 
           l('remoteOrigin is set! Process the endpoint: ' + endpoint + '');
 
@@ -354,7 +390,8 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       l('Message received in child...');
 
-      if (!remoteOrigin && data === READY_MESSAGE) {
+      // *** UPDATE in 1.3.1.
+      if (!remoteOrigin && (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE)) {
         remoteOrigin = evt.origin;
         removeListener(win, MESSAGE_EVENT, processMessage);
 
@@ -372,7 +409,11 @@ LI.TalkIn = LI.Talkin || (function(win) {
         while (cachedData.length) {
           l('There was cachedData available. Send it to parent.');
           cached = cachedData.pop();
-          LI.TalkIn.send(cached[ENDPOINT_PROPERTY], cached);
+          if (cached[ENDPOINT_PROPERTY]) {
+            LI.TalkIn.send(cached[ENDPOINT_PROPERTY], cached);
+          } else {
+            LI.TalkIn.send(cached);
+          }
         }
       }
 
@@ -457,7 +498,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
         p;
 
       if (name && endpoint && endpoint instanceof Object) {
-        if (endpoints[name] && Object.prototype.toString.call(endpoint) === '[object Object]') {
+        if (endpoints[name] && isObject(endpoint)) {
           endpointObject = endpoints[name];
           for (p in endpoint) {
             endpointObject[p] = endpoint[p];
@@ -471,10 +512,27 @@ LI.TalkIn = LI.Talkin || (function(win) {
     /**
      * Transports a data object from the child to the desired endpoint in the parent.
      *
-     * @param {String} methodName    The registered method you wish to invoke.
-     * @param {Object} data        An object containing the JSON you wish to deliver.
+     * @param {String || Object} endpointOrData   The registered endpoint you wish to invoke OR
+     *                                            an object containing endpoints and the data you
+     *                                            wish to deliver to each.
+     * @param {Object} data                       An object containing the JSON you wish to deliver.
+     *                                            Not required if the first argument is a data object.
+     *
+     * Invocation examples:
+     *
+     * send('myEndpoint', {
+     *   number: 3,
+     *   string: 'Hello'
+     * });
+     *
+     * send({
+     *   myEndpoint: {
+     *     number: 3,
+     *     string: 'Hello'
+     *   }
+     * });
      */
-    send: function(methodName, data) {
+    send: function(endpointOrData, data) {
 
       // You can't send from the top-most parent.
       if (isTopWindow) {
@@ -485,16 +543,20 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       // If the endpointNamespace is set, the parent and child are on indentical origins.
       // Just call the parent's method directly.
-      if (endpointNamespace && methodName) {
+      if (endpointNamespace && endpointOrData) {
         l('...and since an endpoint was successfully set, use it.');
-        invokeEndpoint(methodName, data);
+        invokeEndpoint(endpointOrData, data);
       }
 
       // Otherwise we'll use postMessage ... or the legacy fallback.
       else {
 
-        // Append the methodName to the data object so the other methods know what to call.
-        data[ENDPOINT_PROPERTY] = methodName;
+        // Append the endpointOrData to the data object so the other methods know what to call.
+        if (data) {
+          data[ENDPOINT_PROPERTY] = endpointOrData;
+        } else {
+          data = endpointOrData;
+        }
 
         // If this is a modern browser, then sweet! Use postMessage.
         if (hasPostMessage) {
@@ -573,7 +635,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
     addListener: addListener,
     removeListener: removeListener,
 
-    VERSION: '1.2.4'
+    VERSION: '1.3.0'
 
   };
 
