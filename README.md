@@ -153,17 +153,17 @@ LI.TalkIn.register('list', (function() {
 }()));
 ```
 
-
+---
 
 ### send `Child API`
 ```js
-LI.TalkIn.send(methodName, data)
+LI.TalkIn.send(endpointOrData, data)
 ```
-Transports a data object from the child to an endpoint registered in the parent document.
+Transports a data object from the child to an endpoint registered in the parent document. There are two ways to invoke send: Passing an endpoint and data as separate arguments or passing a single object mapping endpoints to data (see last example below). The latter method is useful when two unrelated endpoints should be invoked immediately (on page load for instance) and should always be used in this case to maintain IE7 support. (If you invoke send twice in a row, IE7 users will find that the first endpoint will be overwritten by the second.)
 
 #### Arguments
 
-`methodName {String}`: The name of the method to invoke. Note that dot notation is used for methods on a registered object (see example below).
+`methodName {String || Object}`: The registered endpoint you wish to invoke OR an object containing endpoints and the data you wish to deliver to each. Note that dot notation is used for methods on a registered object (see example below).
 
 `data {Object}`: A JSON structure passed to the method.
 
@@ -180,9 +180,19 @@ LI.TalkIn.send('processNumber', {
 LI.TalkIn.send('list.update', {
   itemId: 'list-item-7'
 });
+
+// Invoke multiple endpoints with corresponding data:
+LI.TalkIn.send({
+  'processNumber': {
+    number: 42
+  },
+  'list.update': {
+    itemId: 'list-item-7'
+  }
+});
 ```
 
-
+---
 
 ### getQueryParams `Child API`
 ```js
@@ -198,7 +208,7 @@ None.
 
 `{Object}` containing a key-value map of all the query and DoubleClick params.
 
-
+---
 
 ### addListener `Child API`
 ```js
@@ -214,7 +224,7 @@ Adds an event listener to an element. Used internally, `addListener` is exposed 
 
 `fn {Function}`: The function to be called when the event fires.
 
-
+---
 
 ### removeListener `Child API`
 ```js
