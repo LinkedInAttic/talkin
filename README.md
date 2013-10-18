@@ -159,11 +159,11 @@ LI.TalkIn.register('list', (function() {
 ```js
 LI.TalkIn.send(endpointOrData, data)
 ```
-Transports a data object from the child to an endpoint registered in the parent document. There are two ways to invoke send: Passing an endpoint and data as separate arguments or passing a single object mapping endpoints to data (see last example below). The latter method is useful when two unrelated endpoints should be invoked immediately (on page load for instance) and should always be used in this case to maintain IE7 support. (If you invoke send twice in a row, IE7 users will find that the first endpoint will be overwritten by the second.)
+Transports a data object from the child to an endpoint registered in the parent document. There are two ways to invoke send: Passing an endpoint and data as separate arguments or passing a single object mapping endpoints to data (see last example below). The latter method is useful when two unrelated endpoints should be invoked immediately (on page load for instance) and should always be used in this case to maintain IE7 support. (If you invoke send twice in a row, IE7 users will find that the first send request will be overwritten by the second.)
 
 #### Arguments
 
-`methodName {String || Object}`: The registered endpoint you wish to invoke OR an object containing endpoints and the data you wish to deliver to each. Note that dot notation is used for methods on a registered object (see example below).
+`endpointOrData {String || Object}`: The registered endpoint you wish to invoke OR an object containing endpoints and the data you wish to deliver to each. Note that dot notation is used for methods on a registered object (see example below).
 
 `data {Object}`: A JSON structure passed to the method.
 
