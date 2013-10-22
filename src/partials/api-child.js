@@ -40,12 +40,9 @@
       // Otherwise we'll use postMessage ... or the legacy fallback.
       else {
 
-        // Append the endpointOrData to the data object so the other methods know what to call.
+        // Package data into a bulk call if not already.
         if (data) {
-          data[ENDPOINT_PROPERTY] = endpointOrData;
-        }
-        else {
-          data = endpointOrData;
+          endpointOrData = bulkify(endpointOrData, data);
         }
 
         // If this is a modern browser, then sweet! Use postMessage.
@@ -54,13 +51,13 @@
 
           // If the remoteOrigin is set, that means the parent and child successfully shook hands.
           if (remoteOrigin) {
-            windowTop.postMessage(JSON.stringify(data), remoteOrigin);
+            windowTop.postMessage(JSON.stringify(endpointOrData), remoteOrigin);
           }
 
           // Otherwise, try establishing the handshake again. The child probably loaded before the parent.
           // Cache the data so it can be sent when the connection is established.
           else {
-            cachedData.push(data);
+            cachedData.push(endpointOrData);
 
             if (!handshakeInterval) {
 
@@ -84,7 +81,7 @@
         // Otherwise, this is probably an old version of IE. Time to get nuts.
         else {
           <%= debug.sendUseLegacyFallback %>
-          sendLegacyMessage(data);
+          sendLegacyMessage(endpointOrData);
         }
       }
       

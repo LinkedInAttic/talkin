@@ -4,7 +4,7 @@
       body = document.getElementsByTagName('body')[0],
       loc = win.location,
       origin = loc.protocol + '//' + loc.host,
-      sendMethodsToTest = 7,
+      sendMethodsToTest = 10,
 
       // Endpoints for 'register' tests.
       test1 = (function() {
@@ -48,12 +48,10 @@
             ok(true, 'Data delivered using postMessage on different origin.');
             done();
           },
-          /*
-          legacyDifferentOrigin: function(data) {
-            ok(true, 'Data delivered using legacy fallback on different origin.');
+          legacy: function(data) {
+            ok(true, 'Data delivered using legacy fallback.');
             done();
           },
-          */
 
           multicall1: function(data) {
             ok(true, 'Multiple calls, 1 of 3');
@@ -74,6 +72,15 @@
           },
           bulkcall2: function(data) {
             ok(true, 'Bulk call, 2 of 2');
+            done();
+          },
+
+          legacyBulkcall1: function(data) {
+            ok(true, 'Legacy bulk call, 1 of 2');
+            done();
+          },
+          legacyBulkcall2: function(data) {
+            ok(true, 'Legacy bulk call, 2 of 2');
             done();
           }
 
@@ -130,9 +137,10 @@
     TalkIn.register('methods', methods);
     buildIFrame(origin + '/test/html/frame-same.html');
     buildIFrame(flippedOrigin + '/test/html/frame-different.html');
-//    buildIFrame(flippedOrigin + '/test/html/frame-legacy-different.html');
+    buildIFrame(origin + '/test/html/frame-legacy-different.html');
     buildIFrame(flippedOrigin + '/test/html/frame-different-multiple.html');
     buildIFrame(flippedOrigin + '/test/html/frame-different-sendbulk.html');
+    buildIFrame(origin + '/test/html/frame-legacy-sendbulk.html');
   });
 
   asyncTest('Fetching query params.', function() {

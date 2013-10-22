@@ -29,9 +29,6 @@ LI.TalkIn = LI.Talkin || (function(win) {
     // *** REMOVE in 1.3.1.
     LEGACY_READY_MESSAGE = 'ADTALK_READY',
 
-    // Temporary property for postMessage data objects containing the target endpoint.
-    ENDPOINT_PROPERTY = 'ADTALK_ENDPOINT',
-
     // The postMessage 'message' event.
     MESSAGE_EVENT = 'message',
 
@@ -153,6 +150,21 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
   function isObject(obj) {
     return toStringProto.call(obj) === TYPE_OBJECT;
+  }
+
+  /**
+   * Converts a dual-argument invocation to a single (bulk) object.
+   *
+   * @param  {String} endpoint  The endpoint to invoke.
+   * @param  {Object} data      The data object to be passed.
+   *
+   * @return {Object}           The combined bulk object.
+   */
+
+  function bulkify(endpoint, data) {
+    var bulk = {};
+    bulk[endpoint] = data;
+    return bulk;
   }
 
   /**
@@ -299,7 +311,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
     var possibleParentOrigins = [
       'https://localhost:9443', 'http://localhost:9090'
     ],
-      path = '/src/lib/talkin/demo/html/sender.html?',
+      path = '/demo/html/sender.html?',
       len = possibleParentOrigins.length,
       container,
       iframes;
@@ -353,34 +365,30 @@ LI.TalkIn = LI.Talkin || (function(win) {
   function processMessage(evt) {
 
     var data = evt.data,
-      parsedData,
-      endpoint,
-      cached;
+      endpoint;
 
     // If this is the parent...
     if (isTopWindow) {
 
       l('Message received in parent...');
 
-      // *** UPDATE in 1.3.1.
+      // If the message is 'ready', shake hands.
+      // *** UPDATE in 1.3.1 to remove legacy.
       if (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE) {
         l('READY! From origin: ' + evt.origin + '. Posting back to child...');
         endpointNamespace = LI.TalkIn.endpoints;
         evt.source.postMessage(READY_MESSAGE, evt.origin);
-      } else {
+      }
 
+      // Else, this must be the data. Let's process it.
+      else {
         try {
-          parsedData = JSON.parse(data);
-          endpoint = parsedData[ENDPOINT_PROPERTY] || parsedData;
-
+          endpoint = JSON.parse(data);
           l('remoteOrigin is set! Process the endpoint: ' + endpoint + '');
-
-          delete parsedData[ENDPOINT_PROPERTY];
-          invokeEndpoint(endpoint, parsedData);
+          invokeEndpoint(endpoint);
         } catch (err) {
           l('ERROR! Parent could not parse message: ' + evt.data + '');
         }
-
       }
 
     }
@@ -390,7 +398,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       l('Message received in child...');
 
-      // *** UPDATE in 1.3.1.
+      // *** UPDATE in 1.3.1 to remove legacy.
       if (!remoteOrigin && (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE)) {
         remoteOrigin = evt.origin;
         removeListener(win, MESSAGE_EVENT, processMessage);
@@ -408,12 +416,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
         // Now that it was successful, attempt to send the initial data again.
         while (cachedData.length) {
           l('There was cachedData available. Send it to parent.');
-          cached = cachedData.pop();
-          if (cached[ENDPOINT_PROPERTY]) {
-            LI.TalkIn.send(cached[ENDPOINT_PROPERTY], cached);
-          } else {
-            LI.TalkIn.send(cached);
-          }
+          LI.TalkIn.send(cachedData.pop());
         }
       }
 
@@ -551,11 +554,9 @@ LI.TalkIn = LI.Talkin || (function(win) {
       // Otherwise we'll use postMessage ... or the legacy fallback.
       else {
 
-        // Append the endpointOrData to the data object so the other methods know what to call.
+        // Package data into a bulk call if not already.
         if (data) {
-          data[ENDPOINT_PROPERTY] = endpointOrData;
-        } else {
-          data = endpointOrData;
+          endpointOrData = bulkify(endpointOrData, data);
         }
 
         // If this is a modern browser, then sweet! Use postMessage.
@@ -564,13 +565,13 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
           // If the remoteOrigin is set, that means the parent and child successfully shook hands.
           if (remoteOrigin) {
-            windowTop.postMessage(JSON.stringify(data), remoteOrigin);
+            windowTop.postMessage(JSON.stringify(endpointOrData), remoteOrigin);
           }
 
           // Otherwise, try establishing the handshake again. The child probably loaded before the parent.
           // Cache the data so it can be sent when the connection is established.
           else {
-            cachedData.push(data);
+            cachedData.push(endpointOrData);
 
             if (!handshakeInterval) {
 
@@ -594,7 +595,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
         // Otherwise, this is probably an old version of IE. Time to get nuts.
         else {
           l('...falling back to ancient browser support.');
-          sendLegacyMessage(data);
+          sendLegacyMessage(endpointOrData);
         }
       }
 

@@ -27,9 +27,6 @@ LI.TalkIn = LI.Talkin || (function(win) {
     // *** REMOVE in 1.3.1.
     LEGACY_READY_MESSAGE = 'ADTALK_READY',
 
-    // Temporary property for postMessage data objects containing the target endpoint.
-    ENDPOINT_PROPERTY = 'ADTALK_ENDPOINT',
-
     // The postMessage 'message' event.
     MESSAGE_EVENT = 'message',
 
@@ -144,6 +141,20 @@ LI.TalkIn = LI.Talkin || (function(win) {
   }
 
   /**
+   * Converts a dual-argument invocation to a single (bulk) object.
+   *
+   * @param  {String} endpoint  The endpoint to invoke.
+   * @param  {Object} data      The data object to be passed.
+   *
+   * @return {Object}           The combined bulk object.
+   */
+  function bulkify(endpoint, data) {
+    var bulk = {};
+    bulk[endpoint] = data;
+    return bulk;
+  }
+
+  /**
    * Invokes the endpoint, checking to see if the enpoint is namespaced or not.
    * (For instance, the endpoint 'foo.bar' will execute 'bar' on the 'foo' object
    * in TalkIn's 'endpoints' namespace.)
@@ -196,9 +207,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
   function processMessage(evt) {
 
     var data = evt.data,
-        parsedData,
-        endpoint,
-        cached;
+        endpoint;
 
     <%= secure.verifyWhitelist %>
 
@@ -207,28 +216,24 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       <%= debug.messageReceivedParent %>
 
-      // *** UPDATE in 1.3.1.
+      // If the message is 'ready', shake hands.
+      // *** UPDATE in 1.3.1 to remove legacy.
       if (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE) {
         <%= debug.settingRemoteOriginParent %>
         endpointNamespace = LI.TalkIn.endpoints;
         evt.source.postMessage(READY_MESSAGE, evt.origin);
       }
 
+      // Else, this must be the data. Let's process it.
       else {
-
         try {
-          parsedData = JSON.parse(data);
-          endpoint = parsedData[ENDPOINT_PROPERTY] || parsedData;
-
+          endpoint = JSON.parse(data);
           <%= debug.remoteOriginSet %>
-          
-          delete parsedData[ENDPOINT_PROPERTY];
-          invokeEndpoint(endpoint, parsedData);
+          invokeEndpoint(endpoint);
         }
         catch (err) {
           <%= debug.errorParsingMessage %>
         }
-
       }
 
     }
@@ -238,7 +243,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       <%= debug.messageReceivedChild %>
 
-      // *** UPDATE in 1.3.1.
+      // *** UPDATE in 1.3.1 to remove legacy.
       if (!remoteOrigin && (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE)) {
         remoteOrigin = evt.origin;
         removeListener(win, MESSAGE_EVENT, processMessage);
@@ -256,13 +261,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
         // Now that it was successful, attempt to send the initial data again.
         while (cachedData.length) {
           <%= debug.cachedDataAvailable %>
-          cached = cachedData.pop();
-          if (cached[ENDPOINT_PROPERTY]) {
-            LI.TalkIn.send(cached[ENDPOINT_PROPERTY], cached);
-          }
-          else {
-            LI.TalkIn.send(cached);
-          }
+          LI.TalkIn.send(cachedData.pop());
         }
       }
 

@@ -14,8 +14,13 @@
   <body>
     <script src="/demo/js/talkin-demo.js"></script>
     <script>
-      LI.TalkIn.send('methods.legacy', {
-        called: true
+      LI.TalkIn.send({
+        'methods.legacyBulkcall1': {
+          called: true
+        },
+        'methods.legacyBulkcall2': {
+          called: true
+        }
       });
     </script>
   </body>
