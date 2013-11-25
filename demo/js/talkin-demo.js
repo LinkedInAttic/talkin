@@ -1,6 +1,6 @@
 /*
 TalkIn
-v1.3.0
+v1.3.1
 (c) 2013 LinkedIn Corp.  All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -630,7 +630,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
     addListener: addListener,
     removeListener: removeListener,
 
-    VERSION: '1.3.0'
+    VERSION: '1.3.1'
 
   };
 
