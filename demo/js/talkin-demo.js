@@ -25,10 +25,6 @@ LI.TalkIn = LI.Talkin || (function(win) {
   // Handshake message data for postMessage mode.
   var READY_MESSAGE = '__READY__',
 
-    // Backwards-compatible ready message required for transition.
-    // *** REMOVE in 1.3.1.
-    LEGACY_READY_MESSAGE = 'ADTALK_READY',
-
     // The postMessage 'message' event.
     MESSAGE_EVENT = 'message',
 
@@ -244,7 +240,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
       if (head) {
         script = doc.createElement('script');
         script.id = scriptId;
-        script.src = '/js/json2.js';
+        script.src = '/demo/js/json2.js';
         script.type = 'text/javascript';
         head.appendChild(script);
       }
@@ -309,7 +305,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
   function sendLegacyMessage(data) {
 
     var possibleParentOrigins = [
-      'https://localhost:9443', 'http://localhost:9090'
+      'https://www.example.com', 'http://www.example.com'
     ],
       path = '/demo/html/sender.html?',
       len = possibleParentOrigins.length,
@@ -373,8 +369,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
       l('Message received in parent...');
 
       // If the message is 'ready', shake hands.
-      // *** UPDATE in 1.3.1 to remove legacy.
-      if (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE) {
+      if (data === READY_MESSAGE) {
         l('READY! From origin: ' + evt.origin + '. Posting back to child...');
         endpointNamespace = LI.TalkIn.endpoints;
         evt.source.postMessage(READY_MESSAGE, evt.origin);
@@ -398,8 +393,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       l('Message received in child...');
 
-      // *** UPDATE in 1.3.1 to remove legacy.
-      if (!remoteOrigin && (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE)) {
+      if (!remoteOrigin && data === READY_MESSAGE) {
         remoteOrigin = evt.origin;
         removeListener(win, MESSAGE_EVENT, processMessage);
 

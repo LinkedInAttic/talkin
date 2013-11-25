@@ -23,10 +23,6 @@ LI.TalkIn = LI.Talkin || (function(win) {
   // Handshake message data for postMessage mode.
   var READY_MESSAGE = '__READY__',
 
-    // Backwards-compatible ready message required for transition.
-    // *** REMOVE in 1.3.1.
-    LEGACY_READY_MESSAGE = 'ADTALK_READY',
-
     // The postMessage 'message' event.
     MESSAGE_EVENT = 'message',
 
@@ -217,8 +213,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
       <%= debug.messageReceivedParent %>
 
       // If the message is 'ready', shake hands.
-      // *** UPDATE in 1.3.1 to remove legacy.
-      if (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE) {
+      if (data === READY_MESSAGE) {
         <%= debug.settingRemoteOriginParent %>
         endpointNamespace = LI.TalkIn.endpoints;
         evt.source.postMessage(READY_MESSAGE, evt.origin);
@@ -243,8 +238,7 @@ LI.TalkIn = LI.Talkin || (function(win) {
 
       <%= debug.messageReceivedChild %>
 
-      // *** UPDATE in 1.3.1 to remove legacy.
-      if (!remoteOrigin && (data === READY_MESSAGE || data === LEGACY_READY_MESSAGE)) {
+      if (!remoteOrigin && data === READY_MESSAGE) {
         remoteOrigin = evt.origin;
         removeListener(win, MESSAGE_EVENT, processMessage);
 
