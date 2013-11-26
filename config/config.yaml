@@ -39,4 +39,4 @@ demoLegacy:
 
   sendfile: /demo/html/sender.html
 
-  json: /js/json2.js
+  json: /demo/js/json2.js

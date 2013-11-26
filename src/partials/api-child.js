@@ -1,10 +1,27 @@
     /**
       * Transports a data object from the child to the desired endpoint in the parent.
       *
-      * @param {String} methodName    The registered method you wish to invoke.
-      * @param {Object} data        An object containing the JSON you wish to deliver.
+      * @param {String || Object} endpointOrData   The registered endpoint you wish to invoke OR
+      *                                            an object containing endpoints and the data you
+      *                                            wish to deliver to each.
+      * @param {Object} data                       An object containing the JSON you wish to deliver.
+      *                                            Not required if the first argument is a data object.
+      *
+      * Invocation examples:
+      *
+      * send('myEndpoint', {
+      *   number: 3,
+      *   string: 'Hello'
+      * });
+      *
+      * send({
+      *   myEndpoint: {
+      *     number: 3,
+      *     string: 'Hello'
+      *   }
+      * });
       */
-    send: function(methodName, data) {
+    send: function(endpointOrData, data) {
 
       // You can't send from the top-most parent.
       if (isTopWindow) {
@@ -15,16 +32,18 @@
       
       // If the endpointNamespace is set, the parent and child are on indentical origins.
       // Just call the parent's method directly.
-      if (endpointNamespace && methodName) {
+      if (endpointNamespace && endpointOrData) {
         <%= debug.sendUseNamespace %>
-        invokeEndpoint(methodName, data);
+        invokeEndpoint(endpointOrData, data);
       }
       
-      // Otherwise we'll use postMessage ... or a the legacy fallback.
+      // Otherwise we'll use postMessage ... or the legacy fallback.
       else {
 
-        // Append the methodName to the data object so the other methods know what to call.
-        data[ENDPOINT_PROPERTY] = methodName;
+        // Package data into a bulk call if not already.
+        if (data) {
+          endpointOrData = bulkify(endpointOrData, data);
+        }
 
         // If this is a modern browser, then sweet! Use postMessage.
         if (hasPostMessage) {
@@ -32,34 +51,37 @@
 
           // If the remoteOrigin is set, that means the parent and child successfully shook hands.
           if (remoteOrigin) {
-            windowTop.postMessage(JSON.stringify(data), remoteOrigin);
+            windowTop.postMessage(JSON.stringify(endpointOrData), remoteOrigin);
           }
 
           // Otherwise, try establishing the handshake again. The child probably loaded before the parent.
           // Cache the data so it can be sent when the connection is established.
-          else if (!handshakeInterval) {
+          else {
+            cachedData.push(endpointOrData);
 
-            <%= debug.sendRemoteOriginNotSet %>
+            if (!handshakeInterval) {
 
-            cachedData = data;
-            handshakeInterval = win.setInterval(function() {
+              <%= debug.sendRemoteOriginNotSet %>
 
-              <%= debug.sendAttemptingHandshake %>
+              handshakeInterval = win.setInterval(function() {
 
-              windowTop.postMessage(READY_MESSAGE, '*');
-              
-              if (!(handshakeTimeout--)) {
-                <%= debug.handshakeFailed %>
-                win.clearInterval(handshakeInterval);
-              }
-            }, 100);
+                <%= debug.sendAttemptingHandshake %>
+
+                windowTop.postMessage(READY_MESSAGE, '*');
+                
+                if (!(handshakeTimeout--)) {
+                  <%= debug.handshakeFailed %>
+                  win.clearInterval(handshakeInterval);
+                }
+              }, 100);
+            }
           }
         }
 
         // Otherwise, this is probably an old version of IE. Time to get nuts.
         else {
           <%= debug.sendUseLegacyFallback %>
-          sendLegacyMessage(data);
+          sendLegacyMessage(endpointOrData);
         }
       }
       

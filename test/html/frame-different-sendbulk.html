@@ -5,17 +5,18 @@
   <head>
     <meta charset="utf-8"/>
     <title>TalkIn : Frame Test</title>
-    <script>
-      window.postMessage = undefined;
-      window.webkitURL = true;
-    </script>
   </head>
   
   <body>
     <script src="/demo/js/talkin-demo.js"></script>
     <script>
-      LI.TalkIn.send('methods.legacy', {
-        called: true
+      LI.TalkIn.send({
+        'methods.bulkcall1': {
+          called: true
+        },
+        'methods.bulkcall2': {
+          called: true
+        }
       });
     </script>
   </body>

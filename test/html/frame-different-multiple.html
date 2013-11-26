@@ -5,16 +5,19 @@
   <head>
     <meta charset="utf-8"/>
     <title>TalkIn : Frame Test</title>
-    <script>
-      window.postMessage = undefined;
-      window.webkitURL = true;
-    </script>
   </head>
   
   <body>
     <script src="/demo/js/talkin-demo.js"></script>
     <script>
-      LI.TalkIn.send('methods.legacy', {
+      var TalkIn = LI.TalkIn;
+      TalkIn.send('methods.multicall3', {
+        called: true
+      });
+      TalkIn.send('methods.multicall2', {
+        called: true
+      });
+      TalkIn.send('methods.multicall1', {
         called: true
       });
     </script>

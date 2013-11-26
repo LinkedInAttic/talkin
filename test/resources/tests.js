@@ -4,35 +4,88 @@
       body = document.getElementsByTagName('body')[0],
       loc = win.location,
       origin = loc.protocol + '//' + loc.host,
-      sendMethodsToTest = 3,
+      sendMethodsToTest = 10,
 
-  methods = (function() {
+      // Endpoints for 'register' tests.
+      test1 = (function() {
+        return {
+          method1: function(data) {
+            return true;
+          },
+          method2: function(data) {
+            return true;
+          }
+        };
+      }()),
 
-    var semaphore = sendMethodsToTest;
+      test2 = (function() {
+        var TEST = 'test';
+        return {
+          method3: function(data) {
+            return TEST;
+          }
+        }
+      }()),
 
-    function done() {
-      if (!--semaphore) {
-        start();
-      }
-    }
+      // Endpoint for 'send' tests.
+      methods = (function() {
 
-    return {
+        var semaphore = sendMethodsToTest;
 
-      sameOrigin: function(data) {
-        ok(true, 'Data delivered using direct access on same origin.');
-        done();
-      },
-      differentOrigin: function(data) {
-        ok(true, 'Data delivered using postMessage on different origin.');
-        done();
-      },
-      legacyDifferentOrigin: function(data) {
-        ok(true, 'Data delivered using legacy fallback on different origin.');
-        done();
-      }
+        function done() {
+          if (!--semaphore) {
+            start();
+          }
+        }
 
-    };
-  }());
+        return {
+
+          sameOrigin: function(data) {
+            ok(true, 'Data delivered using direct access on same origin.');
+            done();
+          },
+          differentOrigin: function(data) {
+            ok(true, 'Data delivered using postMessage on different origin.');
+            done();
+          },
+          legacy: function(data) {
+            ok(true, 'Data delivered using legacy fallback.');
+            done();
+          },
+
+          multicall1: function(data) {
+            ok(true, 'Multiple calls, 1 of 3');
+            done();
+          },
+          multicall2: function(data) {
+            ok(true, 'Multiple calls, 2 of 3');
+            done();
+          },
+          multicall3: function(data) {
+            ok(true, 'Multiple calls, 3 of 3');
+            done();
+          },
+
+          bulkcall1: function(data) {
+            ok(true, 'Bulk call, 1 of 2');
+            done();
+          },
+          bulkcall2: function(data) {
+            ok(true, 'Bulk call, 2 of 2');
+            done();
+          },
+
+          legacyBulkcall1: function(data) {
+            ok(true, 'Legacy bulk call, 1 of 2');
+            done();
+          },
+          legacyBulkcall2: function(data) {
+            ok(true, 'Legacy bulk call, 2 of 2');
+            done();
+          }
+
+        };
+      }());
 
   function testMethod(data) {}
 
@@ -68,10 +121,15 @@
   });
 
   test('Registering functions.', function() {
+    var endpoints = TalkIn.endpoints;
     TalkIn.register('testMethod1', testMethod);
     TalkIn.register('testMethod2', 3);
-    equal(typeof TalkIn.endpoints.testMethod1, 'function', 'Functions are exposed in the \'endpoints\' object.');
-    equal(typeof TalkIn.endpoints.testMethod2, 'undefined', 'Only objects can be registered.');
+    TalkIn.register('testRegister', test1);
+    TalkIn.register('testRegister', test2);
+    equal(typeof endpoints.testMethod1, 'function', 'Functions are exposed in the \'endpoints\' object.');
+    equal(typeof endpoints.testMethod2, 'undefined', 'Only objects can be registered.');
+    equal(typeof endpoints.testRegister.method1, 'function', 'Registering two objects using the same namespace will combine them.');
+    equal(endpoints.testRegister.method3(), 'test', 'Combined endpoints can still access private data.');
   });
 
   asyncTest('Sending data.', sendMethodsToTest, function() {
@@ -79,7 +137,10 @@
     TalkIn.register('methods', methods);
     buildIFrame(origin + '/test/html/frame-same.html');
     buildIFrame(flippedOrigin + '/test/html/frame-different.html');
-    buildIFrame(flippedOrigin + '/test/html/frame-legacy-different.html');
+    buildIFrame(origin + '/test/html/frame-legacy-different.html');
+    buildIFrame(flippedOrigin + '/test/html/frame-different-multiple.html');
+    buildIFrame(flippedOrigin + '/test/html/frame-different-sendbulk.html');
+    buildIFrame(origin + '/test/html/frame-legacy-sendbulk.html');
   });
 
   asyncTest('Fetching query params.', function() {
