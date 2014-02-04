@@ -13,18 +13,12 @@ var	http				= require('http'),
 			cert: fs.readFileSync("keys/certificate.pem")
 		};
 
-function listenAndServe(request, response) {
-	request.addListener("end", function() {
-		file.serve(request, response);
-	});
-}
-
 http.createServer(function(request, response) {
-	listenAndServe(request, response);
+	file.serve(request, response);
 }).listen(httpPort);
 
 https.createServer(options, function(request, response) {
-	listenAndServe(request, response);
+	file.serve(request, response);
 }).listen(httpsPort);
 
 console.log('### TalkIn example server is running:');
