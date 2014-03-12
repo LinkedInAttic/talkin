@@ -1,3 +1,5 @@
+[![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
+
 # TalkIn
 
 TalkIn is an interface providing safe and easy unidirectional cross-document communication.
