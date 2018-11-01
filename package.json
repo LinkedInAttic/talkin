@@ -2,7 +2,7 @@
   "name": "talkin",
   "version": "1.3.2",
   "author": "LinkedIn",
-  "maintainers": "Kevin Mikles <kmikles@linkedin.com>",
+  "maintainers": ["Kevin Mikles <kmikles@linkedin.com>"],
   "licenses": [
     {
       "type": "Apache License, Version 2.0",
