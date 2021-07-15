@@ -1,0 +1,42 @@
+# A list of all the origins that can send or receive data in your application.
+# These will be converted to hashes in an attempt to keep potentially sensetive
+# origins (a control panel for example) out of plain view.
+whitelist:
+- http://www.example.com
+- https://www.example.com
+
+
+
+# Configuration for cross-origin communication in browsers that don't support postMessage.
+legacy:
+
+  # A list of all the origins the parent (top) document could be served from.
+  # Note that these WILL NOT BE hashed. The idea is that a user wouldn't access
+  # a sensitive origin and secure origins can be accessed, by you or your team,
+  # using a browser that supports postMessage.
+  whitelist:
+  - http://www.example.com
+  - https://www.example.com
+
+  # The sendfile is an HTML document required for sending data in legacy browsers.
+  # Place sender.html in a publically accessible place and input the relative path below:
+  sendfile: /path/to/sender.html
+
+  # JSON support is also required.
+  # Place json2.js in a publically accessible place and input the relative path below:
+  json: /path/to/json2.js
+
+
+
+# Legacy configuration for the demo environment.
+# NOTE: You probably don't need to edit this section unless you're demoing remotely. In that
+# case, you'll need to update the whitelist.
+demoLegacy:
+
+  whitelist:
+  - http://www.example.com
+  - https://www.example.com
+
+  sendfile: /demo/html/sender.html
+
+  json: /demo/js/json2.js

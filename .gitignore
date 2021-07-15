@@ -1,0 +1,3 @@
+node_modules/*
+dist/*
+src/partials/sha1.js

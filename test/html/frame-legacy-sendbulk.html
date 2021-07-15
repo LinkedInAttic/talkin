@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8"/>
+    <title>TalkIn : Frame Test</title>
+    <script>
+      window.postMessage = undefined;
+      window.webkitURL = true;
+    </script>
+  </head>
+  
+  <body>
+    <script src="/demo/js/talkin-demo.js"></script>
+    <script>
+      LI.TalkIn.send({
+        'methods.legacyBulkcall1': {
+          called: true
+        },
+        'methods.legacyBulkcall2': {
+          called: true
+        }
+      });
+    </script>
+  </body>
+  
+</html>

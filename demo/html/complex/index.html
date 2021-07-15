@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+  <head>
+    <!--
+      TalkIn
+      (c) 2013 LinkedIn Corp.  All rights reserved.
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing,
+      software distributed under the License is distributed on an "AS
+      IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+      express or implied. See the License for the specific language
+      governing permissions and limitations under the License.
+    -->
+    <meta charset="utf-8"/>
+    <title>TalkIn : Complex Example</title>
+    <link rel="stylesheet" href="../../css/demo.css"/>
+  </head>
+  
+  <body>
+    <h1>TalkIn Complex (API Object)</h1>
+
+    <div id="squares" class="module">
+      <p>Squares go in here:</p>
+    </div>
+
+    <iframe class="module" data-src="{$origin}/demo/html/complex/frame.html"></iframe>
+
+    <script src="../../js/demo-bootstrap.js"></script>
+
+    <!--
+      Since this document is the 'parent' (window.top), we'll use talkin-parent.js in production.
+      The -demo suffix gives us debugging via console, removes whitelist security for ease of use,
+      and has IE7 support properly configured for this environment.
+    -->
+    <script src="../../js/talkin-demo.js"></script>
+
+    <script>
+
+      // Registering an object that exposes functions to be invoked by the iframed document. This is
+      // a useful method for organizing related methods or building your own APIs. TalkIn can also register
+      // functions for simpler communication; see the 'basic' example for more information.
+      LI.TalkIn.register('squares', (function() {
+
+        // Private variables to be used by the 'squares' API.
+        var SQUARE_ID_PREFIX = 'square-',
+            container = document.getElementById('squares'),
+            containerWidth = container.offsetWidth,
+            containerHeight = container.offsetHeight;
+
+        // Private functions called by the public methods.
+        function addSquare(id, color) {
+          var square = document.createElement('div'),
+              squareStyle = square.style;
+          square.id = SQUARE_ID_PREFIX + id;
+          square.className = 'square';
+          squareStyle.backgroundColor = color;
+          squareStyle.top = Math.round(Math.random() * containerHeight) + 'px';
+          squareStyle.left = Math.round(Math.random() * containerWidth) + 'px';
+          container.appendChild(square);
+        }
+
+        function removeSquare(id) {
+          var square = document.getElementById(SQUARE_ID_PREFIX + id);
+          if (square) {
+            square.parentNode.removeChild(square);
+          }
+        }
+
+        // The public API. These methods can be invoked by the iframed document and must include
+        // the 'squares' namespace. For instance, 'squares.add' will invoke the 'add' method.
+        return {
+
+          add: function(data) {
+            addSquare(data.id, data.color);
+          },
+
+          remove: function(data) {
+            removeSquare(data.id);
+          }
+
+        };
+
+      }()));
+
+    </script>
+
+  </body>
+  
+</html>

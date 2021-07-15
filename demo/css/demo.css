@@ -1,0 +1,12 @@
+body { margin: 0; padding: 0; font-family: helvetica, sans-serif;  }
+h1 { margin: 0; padding: 1em; font-size: 2.4em; background-color: #abcdef; border-bottom: dashed 0.4em #fff; }
+ul { margin: 0; padding: 2em 0; background-color: #fff; }
+li { margin: 0; font-size: 1.4em; }
+a { display: block; padding: 0.4em 2em; color: #000; text-decoration: none; transition: padding 0.2s; -moz-transition: padding 0.2s; -webkit-transition: padding 0.2s; -o-transition: padding 0.2s; }
+a:hover { padding-left: 3em; background-color: #bcf333; }
+span { font-size: 0.6em; }
+
+#lucky-number { color: green; font: bold 32px arial; }
+#squares { position: relative; height: 350px; }
+.square { position: absolute; width: 20px; height: 20px; }
+.module { float: left; width: 350px; margin: 16px; border: 1px solid #333; }
